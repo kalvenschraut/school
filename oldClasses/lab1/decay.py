@@ -1,0 +1,8 @@
+init = eval(input("InitialAMount: "))
+halflife = eval(input("Half-life: "))
+time = eval(input("Elapsed-time: "))
+print(init)
+print(halflife)
+print(time)
+residual = init*0.5**(time/halflife)
+print("Residual amount remaining = ",residual)
