@@ -174,11 +174,8 @@ NOTES:
 int bitXor(int x, int y) {
 	int rb = ~x&y;
 	int temp = x&~y;
-	temp = ~temp;
-	rb = ~rb;
-	rb = rb & temp;
-	rb = ~rb;
-	return rb;
+	rb = ~rb & ~temp; //same thing as an or operator
+	return ~rb;
 }
 /* 
  * evenBits - return word with all even-numbered bits set to 1
@@ -187,6 +184,7 @@ int bitXor(int x, int y) {
  *   Rating: 1
  */
 int evenBits(void) {
+	//start with 01010101 and shift by 8 more bits add the bits and repeat until the 32 bits are filled
 	int rb = 85 | 85 << 8;
 	rb = rb | rb << 8;
 	rb = rb | rb << 8;
@@ -201,8 +199,10 @@ int evenBits(void) {
  *   Rating: 2 
  */
 int leastBitPos(int x) {
-		
-  return 2;
+	//inverse then add 1 to cascade the 1s until first 0 and then & with x to grab the position;
+	int rb = ~x + 1;
+	rb = x&rb;
+  return rb;
 }
 /* 
  * isEqual - return 1 if x == y, and 0 otherwise 
@@ -225,9 +225,18 @@ int isEqual(int x, int y) {
  *   Rating: 2
  */
 int fitsBits(int x, int n) {
-	int rb = x >> n;
-	
-  return !rb;
+	/*Creating a mask to deal with negative numbers and 
+	 * then shifting over n-1 bits to figure out if the 
+	 * bit string will fit
+	 */
+	int temp = x >> 31;
+	int temp2 = ~x&temp;
+	int rb;
+	temp = x & ~temp;
+	temp = temp | temp2;
+	rb = n + ~0;
+	rb = temp >> rb;
+  return !rb; 
 }
 /* 
 
@@ -243,7 +252,23 @@ int fitsBits(int x, int n) {
 
  */
 int reverseBytes(int x) {
-  return 2;
+	/*
+	 * Seperate into bytes and then reverse
+	 */
+	int c = 255;
+	int temp = 1 << 31;
+	int temp2 = x^temp;
+	int byte1 = temp2&c;
+	int byte2 = temp2&c << 8;
+	int byte3 = temp2&c << 16;
+	int byte4 = temp2&c << 24;
+	byte1 = byte1 << 24;
+	byte2 = byte2 << 8;
+	byte3 = byte3 >> 8;
+	temp = !!temp << 7;
+	byte4 = byte4 >> 24;
+	byte4 = byte4 + temp;
+  return byte1|byte2|byte3|byte4;
 }
 /* 
  * isPositive - return 1 if x > 0, return 0 otherwise 
@@ -253,8 +278,9 @@ int reverseBytes(int x) {
  *   Rating: 3
  */
 int isPositive(int x) {
+	// Check sign bit and and second line is checking for the zero case
 	int rb = x & 1 << 31;
-	int rb = !rb
+	rb = !rb ^ !x;
   return rb;
 }
 /*
@@ -269,7 +295,25 @@ int isPositive(int x) {
  *   Rating: 3
  */
 int multFiveEighths(int x) {
-  return 2;
+	/*Multiply by 5 then check if negative or not
+	 * if negative apply the bias otherwise bias won't have any effect
+	 * Divide by 8
+	 */
+	//times by 5
+	int rb = x << 2;
+	int bias;
+	int negBias;
+	rb = rb + x;
+	//generate bias for neg numbers. If postive the bias will just add 0 to return bit
+	bias = rb >> 31;
+	bias = !!bias;
+	// either shifting 1 or 0 by 3
+	negBias = ~bias + 1;
+	bias = bias << 3;
+	bias = bias + negBias;
+	rb = rb + bias;
+	rb = rb >> 3;
+  return rb;
 }
 /* 
  * isLessOrEqual - if x <= y  then return 1, else return 0 
@@ -279,7 +323,23 @@ int multFiveEighths(int x) {
  *   Rating: 3
  */
 int isLessOrEqual(int x, int y) {
-  return 2;
+	/* First check if they are equal
+	 * otherwise find the difference betwen x and y and due a few checks
+	*/
+	int negx = ~x + 1;
+	int tmin = 1 << 31;
+	int isEqual = x ^ y;
+	int equal = !isEqual;
+	int check = ~isEqual;
+	int less = y + negx;
+	isEqual = isEqual & x;
+	less = ~less;
+	check = check & less;
+	check = check | isEqual;
+	check = check & tmin;
+	check = !!check;
+
+  return check | equal ;
 }
 /* 
  * logicalNeg - implement the ! operator, using all of 
@@ -290,9 +350,11 @@ int isLessOrEqual(int x, int y) {
  *   Rating: 4 
  */
 int logicalNeg(int x) {
-	int rb = x | 1 << 31;
-	
-  return 2;
+	int rb = ~x+1;
+	rb = rb|x;
+	rb = rb >> 31;
+	rb = ~rb & 1;
+  return rb;
 }
 /* 
  * tc2sm - Convert from two's complement to sign-magnitude 
@@ -304,7 +366,16 @@ int logicalNeg(int x) {
  *   Rating: 4
  */
 int tc2sm(int x) {
-  return 2;
+	// Grab sign bit, inverse, add sign bit and inverse
+	// Also converting negative to postive numbers 
+	int mask = 1 << 31;
+	int sb = mask&x;
+	int temp = x >> 31;
+	int temp2 = ~x+1;
+	temp2 = temp2&temp;
+	temp = x & ~temp;
+	temp = temp | temp2;
+  return sb | temp;
 }
 /*
  * leftBitCount - returns count of number of consective 1's in
@@ -315,7 +386,38 @@ int tc2sm(int x) {
  *   Rating: 4
  */
 int leftBitCount(int x) {
-  return 2;
+	/* Count the ones in each section of the bits 16 8 4 and 2 */
+	int x1 = x;
+	int negx = ~x;
+	int one = !negx;
+	int count = x1 >>16;
+	int temp;
+	count = ~count;
+	count = !count;
+	count = count << 4;
+	x1 = x1 << count;
+	temp = x1 >> 24;
+	temp = ~temp;
+	temp = !temp;
+	temp = temp << 3;
+	x1 = x1 << temp;
+	count = count | temp;
+	temp = x1 >> 28;
+	temp = ~temp;
+	temp = !temp;
+	temp = temp << 2;
+	x1 = x1 << temp;
+	count = count | temp;
+	temp = x1 >> 30;
+	temp = ~temp;
+	temp = !temp;
+	temp = temp << 1;
+	x1 = x1 << temp;
+	count = count | temp;
+	temp = x1 >> 31;
+	temp = 1&temp;
+	count= count ^ temp;
+	return count + one;
 }
 /* 
  * float_neg - Return bit-level equivalent of expression -f for
@@ -329,7 +431,19 @@ int leftBitCount(int x) {
  *   Rating: 2
  */
 unsigned float_neg(unsigned uf) {
- return 2;
+	// check for NAN otherwise add sign bit to the number
+	int nancheck = 255 << 23;
+	int temp = nancheck & uf;
+	int frac,nan,sb,rb;
+	temp = temp ^ nancheck;
+	frac = uf << 9;
+	nan = !temp && frac;
+	sb = 1 << 31;
+	rb = sb + uf;
+	if(nan){
+		rb = uf;
+	}
+ return rb;
 }
 /* 
  * float_half - Return bit-level equivalent of expression 0.5*f for
@@ -343,5 +457,47 @@ unsigned float_neg(unsigned uf) {
  *   Rating: 4
  */
 unsigned float_half(unsigned uf) {
-  return 2;
+	//Grabbing the sign bit, exp bits, and frac bits. 
+	//Checking if odd so rounding can be handled
+	int sbm = 1 << 31;
+	int tempm = sbm >> 8;
+	int em = sbm^tempm;
+	int fm = ~tempm;
+	int sb = uf&sbm;
+	int exp = em&uf;
+	int frac = fm&uf;
+	int odd = frac & 3;
+	int newFrac;
+	int nan = em ^ exp;
+	int check = 0;
+	int rb = 0;
+	int testCase = exp >> 23;
+	int temp = 1 << 22;
+	odd = odd^3;
+	odd = !odd;
+	newFrac = frac + odd;
+	newFrac = newFrac >> 1;
+	// nan and infinity case
+	if(!nan){
+		check = 1;
+		rb = uf;
+	}
+	// exp 0 case
+	if(!exp){
+		check = 1;
+		rb = sb | newFrac;
+	}
+	//The shift from normalized to denormalized case
+	testCase = testCase^1;
+	if(!testCase){
+		check = 1;
+		return sb | temp | newFrac;
+	}
+	//otherwise decrease exp by 1
+	if(!check){
+		exp = exp + ~0;
+		exp = exp&em; // get rid of overflow
+		rb = sb | exp | frac;
+	}
+  return rb;
 }

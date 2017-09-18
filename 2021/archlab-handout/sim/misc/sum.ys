@@ -1,0 +1,42 @@
+#Kalven Schraut
+#ID: 4949830
+#x500: schra447
+	.pos 0
+init:
+		irmovq stack, %rsp
+		irmovq stack, %rbp
+		call main
+		halt
+main:
+		irmovq ele1, %rdi
+		call sum_list
+		ret
+sum_list:
+		irmovq 16, %r8
+		xorq %rax, %rax
+		mrmovq (%rdi), %r9
+		andq %r9,%r9
+		je finish
+	loop:
+		mrmovq (%rdi), %r9
+		addq %r9,%rax
+		addq %r8,%rdi
+		mrmovq (%rdi),%r9
+		andq %r9,%r9
+		jne loop
+	finish:
+		ret
+#sample linked list
+.align 8
+ele1:
+		.quad 0xa00
+		.quad ele2
+ele2:
+		.quad 0x0b0
+		.quad ele3
+ele3:
+		.quad 0x00c
+		.quad 0
+	.pos 0x100
+stack:
+

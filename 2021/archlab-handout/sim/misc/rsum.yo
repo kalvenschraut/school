@@ -1,0 +1,51 @@
+                            | #Kalven Schraut
+                            | #ID: 4949830
+                            | #x500: schra447
+0x000:                      | 	.pos 0
+0x000:                      | init:
+0x000: 30f40004000000000000 | 		irmovq stack, %rsp
+0x00a: 30f50004000000000000 | 		irmovq stack, %rbp
+0x014: 801e00000000000000   | 		call main
+0x01d: 00                   | 		halt
+0x01e:                      | main:
+0x01e: a05f                 | 		pushq %rbp
+0x020: 2045                 | 		rrmovq %rsp, %rbp
+0x022: 30f78800000000000000 | 		irmovq ele1, %rdi
+0x02c: 803a00000000000000   | 		call rsum_list
+0x035: 2054                 | 		rrmovq %rbp, %rsp
+0x037: b05f                 | 		popq %rbp
+0x039: 90                   | 		ret
+0x03a:                      | rsum_list:
+0x03a: a05f                 | 		pushq %rbp
+0x03c: 2045                 | 		rrmovq %rsp, %rbp
+0x03e: 30f81000000000000000 | 		irmovq 16, %r8
+0x048: 6300                 | 		xorq %rax, %rax
+0x04a: 50970000000000000000 | 		mrmovq (%rdi), %r9
+0x054: 6299                 | 		andq %r9,%r9
+0x056: 737900000000000000   | 		je if
+0x05f: 6087                 | 		addq %r8, %rdi
+0x061: a09f                 | 		pushq %r9
+0x063: 803a00000000000000   | 		call rsum_list
+0x06c: b09f                 | 		popq %r9
+0x06e: 6090                 | 		addq %r9, %rax
+0x070: 708300000000000000   | 		jmp finish
+0x079:                      | 	if:
+0x079: 30f00000000000000000 | 		irmovq 0, %rax
+0x083:                      | 	finish:
+0x083: 2054                 | 		rrmovq %rbp, %rsp
+0x085: b05f                 | 		popq %rbp
+0x087: 90                   | 		ret
+                            | #sample linked list
+0x088:                      | .align 8
+0x088:                      | ele1:
+0x088: 000a000000000000     | 		.quad 0xa00
+0x090: 9800000000000000     | 		.quad ele2
+0x098:                      | ele2:
+0x098: b000000000000000     | 		.quad 0x0b0
+0x0a0: a800000000000000     | 		.quad ele3
+0x0a8:                      | ele3:
+0x0a8: 0c00000000000000     | 		.quad 0x00c
+0x0b0: 0000000000000000     | 		.quad 0
+0x400:                      | 	.pos 0x400
+0x400:                      | stack:
+                            | 

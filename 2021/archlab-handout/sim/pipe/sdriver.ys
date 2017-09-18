@@ -1,0 +1,179 @@
+#######################################################################
+# Test for copying block of size 4;
+#######################################################################
+  .pos 0
+main:  irmovq Stack, %rsp    # Set up stack pointer
+
+  # Set up arguments for copy function and then invoke it
+  irmovq $4, %rdx    # src and dst have 4 elements
+  irmovq dest, %rsi  # dst array
+  irmovq src, %rdi  # src array
+  call ncopy     
+  halt      # should halt with num nonzeros in %rax
+StartFun:
+#/* $begin ncopy-ys */
+##################################################################
+# ncopy.ys - Copy a src block of len words to dst.
+# Return the number of positive words (>0) contained in src.
+#
+# Include your name and ID here.
+# Kalven Schraut
+# 4949830
+# schra447
+# Describe how and why you modified the baseline code.
+# First I changed the first jump to an unconditional jump
+# to test and then the condition can be performed to 
+# test whether or not to jump to the loop. This was done
+# to take advanced of the assumption that jumps are always taken
+# unlike before the first jump was almost never taken causing a 
+# loss of cycles. The next major change was I did a loop unrolling
+# for 5 times and rearranged the load/store mrmovq and rmmovq to allow
+# for no cycles to be wasted by having to stall waiting for the mrmovq to be
+# finished. The loop unrolling helped reduce the amount of 
+# instructions needed to execute overall since instead of
+# adding 8 to the src/dest and -1 to the length after 
+# every iteration, 40 can be added to the src/dest and -5 to the length
+# after doing 5 iterations. This can be done since my check makes sure there
+# are at least 5 elements left in the src meaning that each one will
+# be  located 8 bytes after the one before so all of this can
+# be combined onto the mrmovq and rmovq instructions. finally after
+# there are less than  5 instructions left, I first check to see
+# if there is an element left in the src if so process the element, this
+# continues 4 more times or until no more elements are found since my
+# check makes sure there are less than 5 elements left. All this has
+# allowed me to achieve under 8.5 CPE while correctly copying and
+# outputting the correct count.
+##################################################################
+# Do not modify this portion
+# Function prologue.
+# %rdi = src, %rsi = dst, %rdx = len
+ncopy:
+
+##################################################################
+# You can modify this portion
+  # Loop header
+  xorq %rax,%rax    # count = 0;
+  jmp Test    # go to Test:
+Loop1:
+	mrmovq (%rdi), %r10  # read val1 from src
+	mrmovq 8(%rdi), %r8  # read val2 from src + 8
+  rmmovq %r10, (%rsi)  # store val to dst
+  andq %r10, %r10    # val <= 0?
+  jle Loop2    # if so, goto Loop2:
+  iaddq $1, %rax   # count++
+Loop2:
+  rmmovq %r8, 8(%rsi)  # store val2 to dest + 8
+  andq %r8, %r8    # val <= 0?
+  jle Loop3    # if so, goto Loop3:
+  iaddq $1, %rax   # count++
+Loop3:
+	mrmovq 16(%rdi), %r10  # read val1 from src + 16
+	mrmovq 24(%rdi), %r8  # read val2 from src + 24
+  rmmovq %r10, 16(%rsi)  # store val1 to dest + 16
+  andq %r10, %r10    # val <= 0?
+  jle Loop4    # if so, goto Loop4:
+  iaddq $1, %rax   # count++
+Loop4:
+  rmmovq %r8, 24(%rsi)  # store val3 to dest + 24
+  andq %r8, %r8    # val <= 0?
+  jle Loop5    # if so, goto Loop5:
+  iaddq $1, %rax   # count++
+Loop5:
+	mrmovq 32(%rdi), %r10  # read val1 from src + 32
+  iaddq $40, %rdi    # add 40 to src
+  rmmovq %r10, 32(%rsi)  # stpre val1 to dest + 32
+  iaddq $40, %rsi    # add 40 to dest
+  iaddq $-5, %rdx    # substract 5 from len
+  andq %r10, %r10    # val <= 0?
+  jle Test    # if so, goto Test:
+  iaddq $1, %rax   # count++
+Test:
+  rrmovq %rdx, %r9    # move a seperate copy of len to temp register
+	iaddq $-5, %r9  # Sub 5 from temp length to see if the remaining length is at least 5
+  jge Loop1      # if so, goto Loop:
+jt1:
+	iaddq $-1, %rdx # len--
+	jl Done # if less than 0 then go to Done
+	mrmovq (%rdi), %r10  # read val1 from src
+	mrmovq 8(%rdi), %r8  # read val2 from src + 8
+  rmmovq %r10, (%rsi)  # store val1 to dest
+  andq %r10, %r10    # val <= 0?
+  jle jt2    # if so, goto jt2:
+  iaddq $1, %rax   # count++
+jt2:
+	iaddq $-1, %rdx # len--
+	jl Done # if less than 0 then go to Done
+  rmmovq %r8, 8(%rsi)  # store val2 to dest + 8
+  andq %r8, %r8    # val <= 0?
+  jle jt3    # if so, goto jt3:
+  iaddq $1, %rax   # count++
+jt3:
+	iaddq $-1, %rdx # len--
+	jl Done # if less than 0 then go to Done
+	mrmovq 16(%rdi), %r10  # read val1 from src + 16
+	mrmovq 24(%rdi), %r8  # read val2 from src + 24
+  rmmovq %r10, 16(%rsi)  # store val1 to dest + 16
+  andq %r10, %r10    # val <= 0?
+  jle jt4    # if so, goto jt4:
+  iaddq $1, %rax   # count++
+jt4:
+	iaddq $-1, %rdx # len--
+	jl Done # if less than 0 then go to Done
+  rmmovq %r8, 24(%rsi)  # store val2 to dest + 24
+  andq %r8, %r8    # val <= 0?
+  jle Done    # if so, goto Done:
+  iaddq $1, %rax   # count++
+##################################################################
+# Do not modify the following section of code
+# Function epilogue.
+Done:
+  ret
+##################################################################
+# Keep the following label at the end of your function
+End:
+#/* $end ncopy-ys */
+
+EndFun:
+
+###############################
+# Source and destination blocks 
+###############################
+  .align 8
+src:
+	.quad 1
+	.quad 2
+	.quad -3
+	.quad -4
+  .quad 0xbcdefa # This shouldn't get moved
+
+  .align 16
+Predest:
+  .quad 0xbcdefa
+dest:
+	.quad 0xcdefab
+	.quad 0xcdefab
+	.quad 0xcdefab
+	.quad 0xcdefab
+Postdest:
+  .quad 0xdefabc
+
+.align 8
+# Run time stack
+  .quad 0
+  .quad 0
+  .quad 0
+  .quad 0
+  .quad 0
+  .quad 0
+  .quad 0
+  .quad 0
+  .quad 0
+  .quad 0
+  .quad 0
+  .quad 0
+  .quad 0
+  .quad 0
+  .quad 0
+  .quad 0
+
+Stack:

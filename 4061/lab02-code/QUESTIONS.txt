@@ -1,0 +1,134 @@
+                           __________________
+
+                            LAB 02 QUESTIONS
+                           __________________
+
+
+- Name: (FILL THIS in)
+- NetID: (THE kauf0095 IN kauf0095@umn.edu)
+
+Answer the questions below according to the lab specification. Write
+your answers directly in this text file and submit it to complete Lab01.
+
+
+PROBLEM 1 `fork1.c'
+===================
+
+A
+~
+
+  Compile and run the program in `fork1.c'. Show it's output below.
+	I am number 0, my pid is 18047
+	I am number 8, my pid is 18045
+	I am number 1, my pid is 18048
+	I am number 2, my pid is 18049
+	I am number 3, my pid is 18050
+	I am number 4, my pid is 18051
+	I am number 5, my pid is 18053
+	I am number 6, my pid is 18054
+	I am number 7, my pid is 18055
+
+
+B
+~
+
+  Is the output ordered or disordered with respect to the "I am
+  number..." statements? Why?
+  Disordered, since the OS decides the order in which the processes finish.
+
+C
+~
+
+  Add calls to the wait() or waitpid() function to ensure that the
+  output is ordered. Paste your code below.
+	I am number 0, my pid is 19145
+	I am number 1, my pid is 19146
+	I am number 2, my pid is 19147
+	I am number 3, my pid is 19148
+	I am number 4, my pid is 19149
+	I am number 5, my pid is 19150
+	I am number 6, my pid is 19151
+	I am number 7, my pid is 19152
+	I am number 8, my pid is 19144
+
+
+D
+~
+
+  How many parents and children are there in this program? What is their
+  arrangement?
+  1 parent and 8 children. the parent is number 8 in the output since it invokes fork for each iteration of the loop and fork returns a
+  non-zero value to the variable child for the parent. Then for the child process the child variable is going to be equal to
+  0 due to definition of fork() which results in the child terminating right away.
+
+
+PROBLEM 2 `fork-exec1.c'
+========================
+
+A
+~
+
+  Compile and run the program in `fork-exec1.c'. Show it's output below.
+	Running command 'ls'
+	------------------
+	total 60K
+	drwx------ 2 schra447 CSEL-student    7 Sep 18 11:42 .
+	drwx------ 4 schra447 CSEL-student    4 Sep 18 11:14 ..
+	-rwx------ 1 schra447 CSEL-student 7.0K Sep 18 11:37 fork1
+	-rw------- 1 schra447 CSEL-student  276 Sep 18 11:37 fork1.c
+	-rwx------ 1 schra447 CSEL-student 6.9K Sep 18 11:42 fork-exec1
+	-rw------- 1 schra447 CSEL-student  360 Sep 13 13:56 fork-exec1.c
+
+
+B
+~
+
+  Adjust the contents of the `child_argv[]' array. Try remove the "-l"
+  element, try adding on ".." prior to the final NULL, or make other
+  modifications INCLUDING for the 0th "ls" string.  Recompile and
+  describe whether the output has changed.
+	everything after the 0th element affects the output of the command since
+	that is where the ls command is looking for it's flags to determine its output. (like a normal argv array)
+	To change the actual command the child_cmd variable needs to be changed.
+
+C
+~
+
+  Change the child_cmd string from "ls" to be something else like "gcc"
+  or "cat". Recompile ad explain what happens now.
+	I did "pwd" and it outputted the contents of my working directory, I also changed the child_argv to all NULL besides argv[0]
+
+D
+~
+
+  Currently `fork-exec1.c' does not reach the bottom statements.
+  ,----
+  |   printf("------------------\n");
+  |   printf("Finished\n");
+  `----
+  Correct this by doing the following:
+  - Fork a child process
+  - Have ONLY the child process call execvp()
+  - Have the parent process wait() for the child
+  Paste your code below.
+	#include <stdio.h>
+	#include <stdlib.h>
+	#include <sys/wait.h>
+	#include <unistd.h>
+
+	int main(void){
+
+	  char *child_argv[] = {"ls",NULL,NULL,NULL};
+	  char *child_cmd = "pwd";
+
+	  printf("Running command '%s'\n",child_cmd);
+	  printf("------------------\n");
+	  pid_t child = fork();
+	  if (child == 0) {
+		 execvp(child_cmd,child_argv);
+	  }
+	  waitpid(child, NULL, 0); 
+	  printf("------------------\n");
+	  printf("Finished\n");
+	  return 0;
+	}  
