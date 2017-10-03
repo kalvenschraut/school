@@ -1,0 +1,114 @@
+	__________________
+
+	LAB 03 QUESTIONS
+	__________________
+
+
+	- Name: (FILL THIS in)
+	- NetID: (THE kauf0095 IN kauf0095@umn.edu)
+
+	Answer the questions below according to the lab specification. Write
+	your answers directly in this text file and submit it to complete Lab01.
+
+
+	PROBLEM 1 `wait-fork.c'
+	=======================
+
+	A
+	~
+
+	Compile and run the program in `wait-loop.c'. Does the loop in the
+	program ever end? How must one "exit" the program?
+	No, ctrl-C
+
+	Alter the code so that when the child has completed execution, the
+	program breaks out of the loop and the program ends normally. Paste in
+	the code you used for this.
+	changed while loop to depend on a variable
+
+		int done = 0;
+		while(!done){
+		then when the child exists change done = 1
+
+	Adjust the code so that the exit status of the child process is
+	printed when it finishes. Make sure to use the macros
+	`WIFEXITED(status)' and `WEXITSTATUS(status)' to deal with the
+	`status' set by `waitpid()'.  Paste the code you added for your
+	answer.
+		if (WIFEXITED(status)) {
+			printf("CHILD FINISHED STATUS: %d\n", WEXITSTATUS(status));
+			done = 1;
+		}
+
+	Make changes so that if the user types in the string `quit', the
+	program exits immediately without waiting further for the
+	child. Example:
+	,----
+	| > a.out
+	| Type text then press enter to check on child:
+	| quit
+	| Entered text: 'quit'
+	| Quitting
+	| Exiting wait-loop
+	| > CHILD: Awake and Done
+	`----
+	Note that the child eventually prints output to the screen which is
+	fine.
+
+	You will need to check the user input using the `strncmp()'
+	function. Do some research on this function as it will prove generally
+	useful.
+
+	Paste the code you used below.
+		int eq;
+		eq = strncmp(&input[strlen(input)-4], "quit", 4);
+		if ( eq != 0) do child checking
+		else 
+			printf("Killing child\n"); // didn't have to but decided to kill child anyway
+			kill(child_pid, SIGKILL);
+			done = 1;
+
+	The current call to `waitpid()' blocks, pausing execution of the
+	parent process until the child finishes. Look up the option to pass to
+	`waitpid()' that will allow it to do a non-blocking wait which returns
+	immediately if the child is not finished. A sample behavior is below.
+	,----
+	| > a.out
+	| Type text then press enter to check on child:
+	| stuff
+	| Entered text: 'stuff'
+	| Waiting
+	| Child not finished: wait returned 0
+	| 
+	| Type text then press enter to check on child:
+	| more stuff
+	| Entered text: 'more stuff'
+	| Waiting
+	| Child not finished: wait returned 0
+	| 
+	| Type text then press enter to check on child:
+	| CHILD: Awake and Done 
+	| Looks like you're finally up
+	| Entered text: 'Looks like you're finally up'
+	| Waiting
+	| CHILD FINISHED: Exit status 5
+	| Exiting wait-loop
+	| >
+	`----
+
+	Paste your entire code for `wait-loop.c' below.
+
+		printf("Entered text: '%s'\n",input);
+		printf("Waiting\n");
+		int status;
+		pid_t pid = waitpid(child_pid, &status, WNOHANG);
+		if (pid == 0) {
+			printf("child not finished: wait returned 0\n");
+		} else if (WIFEXITED(status)) {
+			printf("CHILD FINISHED STATUS: %d\n", WEXITSTATUS(status));
+			done = 1;
+		} else if (WIFSIGNALED(status)) {
+			printf("Child killed by signal number %d\n", WTERMSIG(status));
+			done = 1;
+		}
+
