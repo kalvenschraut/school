@@ -24,7 +24,7 @@ command line: image -input splash.jpg -saturation 0 -output splashSaturation.jpg
 
 command line: image -input splash.jpg -crop 300 300 600 300 -output splashCrop.jpg
 
-![Alt text](https://raw.githubusercontent.com/kalvenschraut/school/master/5607/ImageCode/sample/sunRed.jpg
+![Alt text](https://raw.githubusercontent.com/kalvenschraut/school/master/5607/ImageCode/sample/sunRed.jpg)
 command line: image -input sun.jpg -extractChannel 1 -output sunRed.jpg
 
 ![Alt text](https://raw.githubusercontent.com/kalvenschraut/school/master/5607/ImageCode/sample/sunGreen.jpg)
