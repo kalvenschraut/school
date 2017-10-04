@@ -6,6 +6,7 @@ convolutions 100% right due to brightness seeming to increase after the convolut
 assignment because of the struggles I had early on since I was able to learn so much about image processing.
 
 Artistic images at the end.
+
 Picture Examples:
 
 ![Alt text](https://raw.githubusercontent.com/kalvenschraut/school/master/5607/ImageCode/sample/millcityBrighten.jpg)
