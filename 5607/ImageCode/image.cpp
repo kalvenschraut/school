@@ -521,9 +521,6 @@ Pixel Image::Sample (double u, double v){
 		}
 		p.SetClamp(red, green, blue);
 	} else if (sampling_method == IMAGE_SAMPLING_GAUSSIAN) {
-		double red = 0;
-		double green = 0;
-		double blue = 0;
 		for (i = -r; i <=  r; i++) {
 			for (j = -r; j <= r; j++) {
 				int calcU = roundU + i; 
