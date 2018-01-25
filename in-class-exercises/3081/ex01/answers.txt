@@ -1,0 +1,32 @@
+Kalven Schraut
+Jeremy Lopez
+Tyler Webster
+
+Question 1:
+
+The Order Class needs CartContents which is a list of CartEntries.
+Order needs to know what property holds the list of CartEntries and 
+how many items are in the list. Then OrderTotal needs to know what properties
+of the CartEntries contain the price and quantity values need to do the calculation.
+
+The variables should be made private and then accessed using getters so there is more flexiblity
+in case anything changes in the future.
+
+Question 2:
+
+In the class CartContents, change  CartEntry* items_ to std::vector<CartEntry> items_.
+This will then affect how items are inserted since vector push_back will be needed to be used.
+Accessing stays the same since vectors support the [] operator.
+
+Question 3:
+
+Add getters and setters to allow the variables to be accessed by outside of the class scope.
+A getItems and setItems will be needed in Cartcontents along with getPrice, setPrice, getQuantity,
+and setQuantity in CartEntry.
+
+Question 4:
+
+Private enforces scope on the variable so only methods inside the class can access the variable. This makes it 
+so other classes have to use the getters and setters to interact with the specific variable. This allows the
+interface to stay consistent and not affect any other classes while still allowing changes to be made in the
+internals of the class such as changing data structures or renaming private variables.
